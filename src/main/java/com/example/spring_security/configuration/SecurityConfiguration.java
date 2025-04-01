@@ -13,7 +13,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -47,13 +49,27 @@ public class SecurityConfiguration {
 
         //return http.build(); //provide us the SecurityFilterChain object
 
+//        return http.csrf(customizer -> customizer.disable())
+//                .authorizeHttpRequests(request -> request.anyRequest().authenticated())
+//                .httpBasic(Customizer.withDefaults())
+//                .sessionManagement(session ->
+//                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .build(); //Builder pattern
+
+        // Same with Roles and Permissions
         return http.csrf(customizer -> customizer.disable())
-                .authorizeHttpRequests(request -> request.anyRequest().authenticated())
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/admin/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers("/user/**")
+                        .hasAnyRole("ADMIN","USER")
+                        .requestMatchers("/public/**")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build(); //Builder pattern
-
 
         // How csrf disable works?
 //        Customizer<CsrfConfigurer<HttpSecurity>> custcsrf = new Customizer<CsrfConfigurer<HttpSecurity>>() {
@@ -102,7 +118,8 @@ public class SecurityConfiguration {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance()); // No password encoding
+        //provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance()); // No password encoding
+        provider.setPasswordEncoder(new BCryptPasswordEncoder(12)); // BCrypt Hashing
         provider.setUserDetailsService(userDetailsService);
         return provider;
     }
