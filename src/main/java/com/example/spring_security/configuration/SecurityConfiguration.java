@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -22,8 +23,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
+//@EnableMethodSecurity
 public class SecurityConfiguration {
 
     @Autowired
@@ -57,16 +59,27 @@ public class SecurityConfiguration {
 //                .build(); //Builder pattern
 
         // Same with Roles and Permissions
+//        return http.csrf(customizer -> customizer.disable())
+//                .authorizeHttpRequests(request -> request
+//                        .requestMatchers("/admin/**")
+//                        .hasRole("ADMIN")
+//                        .requestMatchers("/user/**")
+//                        .hasAnyRole("ADMIN","USER")
+//                        .requestMatchers("/public/**")
+//                        .permitAll()
+//                        .anyRequest().authenticated())
+//                .httpBasic(Customizer.withDefaults())
+//                // .formLogin(login -> login.loginPage("/login").permitAll())
+//                .sessionManagement(session ->
+//                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .build(); //Builder pattern
+
+        // Practice
         return http.csrf(customizer -> customizer.disable())
-                .authorizeHttpRequests(request -> request
+                .authorizeHttpRequests(req -> req
                         .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
-                        .requestMatchers("/user/**")
-                        .hasAnyRole("ADMIN","USER")
-                        .requestMatchers("/public/**")
                         .permitAll()
-                        .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
+                ).formLogin(form -> form.loginPage("/adminLogin").permitAll())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build(); //Builder pattern
@@ -123,4 +136,15 @@ public class SecurityConfiguration {
         provider.setUserDetailsService(userDetailsService);
         return provider;
     }
+
+    public SecurityFilterChain userSecurityFilterChain(HttpSecurity http) throws Exception {
+        return http.csrf(customizer -> customizer.disable())
+                .authorizeHttpRequests(req -> req
+                        .requestMatchers("/user/**")
+                        .permitAll()
+                ).formLogin(form -> form.loginPage("/userLogin").permitAll())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .build();
+    }
+
 }

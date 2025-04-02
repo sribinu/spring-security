@@ -18,4 +18,15 @@ public class UsersService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         usersRepository.save(user);
     }
+
+    public Boolean loginCheck(Users user) {
+        Users user1 = usersRepository.findByUsername(user.getUsername());
+        if (user1 !=null && passwordEncoder.matches(user.getPassword(), user1.getPassword())) {
+            // passwordEncoder.matches(rawPassword, encodedPassword)
+            return true;
+        }
+        else
+            return false;
+
+    }
 }
