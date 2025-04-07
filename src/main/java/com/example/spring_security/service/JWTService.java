@@ -17,7 +17,7 @@ import java.util.Map;
 @Service
 public class JWTService {
 
-    private String secretKey;
+    private String secretKey = ""; // To avoid null
 
     public JWTService() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
